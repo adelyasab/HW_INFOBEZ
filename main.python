@@ -1,0 +1,33 @@
+from Crypto.Cipher import AES
+import string
+import numpy as np
+import binascii
+import os
+
+KEY_LENGTH = 8
+CHARACTER_SET = string.ascii_uppercase
+def generate_random_string(length: int) -> str:
+    return ''.join(np.random.choice(list(CHARACTER_SET),length))
+    
+K = generate_random_string(KEY_LENGTH)
+S = generate_random_string(KEY_LENGTH)
+print(f'Key: {K}\n salt: {S}')
+
+def f(x):
+    x = x + S[:16 - len(x)]
+    cipher = AES.new(K.encode("utf-8"), AES.MODE_ECB)
+    return cipher.encrypt(x.encode("utf-8"))
+    
+our_salt = ''
+while len(our_salt) != 16:
+    length_s = 15 - len(our_salt)
+    x = 'A' * length_s
+    initial = f(x)
+    for i in string.printable:
+        current = f(x + our_salt + i)
+        if current == initial:
+           our_salt += i
+           break
+
+print(f"Salt: {our_salt}")
+
